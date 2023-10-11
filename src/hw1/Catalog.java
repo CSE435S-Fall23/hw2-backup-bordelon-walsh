@@ -20,8 +20,28 @@ public class Catalog {
      * Constructor.
      * Creates a new, empty catalog.
      */
+	
+	//private inner class to hold needed values
+	private class table{
+		String name;
+		HeapFile file;
+		String PKey;
+		
+		public table(HeapFile f, String n, String PK) {
+			this.name = n;
+			this.file = f;
+			this.PKey = PK;
+		}
+	}
+	
+	//have a catalog right here
+	ArrayList<table> catalog;
+	
     public Catalog() {
     	//your code here
+    	
+    	//initialize the catalog
+    	catalog = new ArrayList<table>();
     }
 
     /**
@@ -34,6 +54,8 @@ public class Catalog {
      */
     public void addTable(HeapFile file, String name, String pkeyField) {
     	//your code here
+    	//create and add a table
+    	catalog.add(new table(file, name, pkeyField));
     }
 
     public void addTable(HeapFile file, String name) {
@@ -46,7 +68,15 @@ public class Catalog {
      */
     public int getTableId(String name) {
     	//your code here
-    	return 0;
+    	
+    	//for each entry in the catalog, if the names of the tables are equal get the ID
+    	for(int i = 0; i < catalog.size(); i++) {
+    		if(catalog.get(i).name.equals(name)) {
+    			return catalog.get(i).file.getId();
+    		}
+    	}
+    	//if it cannot be found, throw an exception
+    	throw new NoSuchElementException("Element does not exist");
     }
 
     /**
@@ -56,7 +86,14 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
     	//your code here
-    	return null;
+    	
+    	//for each table in the catalog, check the IDs, if they are equal get the desc
+    	for(int i = 0; i < catalog.size(); i++) {
+    		if(catalog.get(i).file.getId() == tableid) {
+    			return catalog.get(i).file.getTupleDesc();
+    		}
+    	}
+    	throw new NoSuchElementException("Element does not exist");
     }
 
     /**
@@ -67,27 +104,54 @@ public class Catalog {
      */
     public HeapFile getDbFile(int tableid) throws NoSuchElementException {
     	//your code here
-    	return null;
+    	
+    	//for each table get the ID, if the IDs match get the file
+    	for(int i = 0; i < catalog.size(); i++) {
+    		if(catalog.get(i).file.getId() == tableid) {
+    			return catalog.get(i).file;
+    		}
+    	}
+    	throw new NoSuchElementException("Element does not exist");
     }
 
     /** Delete all tables from the catalog */
     public void clear() {
-    	//your code here
+    	catalog.clear();
     }
 
     public String getPrimaryKey(int tableid) {
     	//your code here
-    	return null;
+    	
+    	//compare IDs and find the PKey
+    	for(int i = 0; i < catalog.size(); i++) {
+    		if(catalog.get(i).file.getId() == tableid) {
+    			return catalog.get(i).PKey;
+    		}
+    	}
+    	throw new NoSuchElementException("Elment does not exist");
     }
 
     public Iterator<Integer> tableIdIterator() {
     	//your code here
-    	return null;
+    	
+    	//create an arraylist to contain table IDs and return the generated iterator
+    	ArrayList<Integer> ids = new ArrayList<Integer>();
+    	for(int i = 0; i < catalog.size(); i++) {
+    		ids.add(catalog.get(i).file.getId());
+    	}
+    	return ids.iterator();
     }
 
     public String getTableName(int id) {
     	//your code here
-    	return null;
+    	
+    	//compare IDs, get the name of the table
+    	for(int i = 0; i < catalog.size(); i++) {
+    		if(catalog.get(i).file.getId() == id) {
+    			return catalog.get(i).name;
+    		}
+    	}
+    	throw new NoSuchElementException("Element does not exist");
     }
     
     /**
@@ -144,4 +208,3 @@ public class Catalog {
         }
     }
 }
-

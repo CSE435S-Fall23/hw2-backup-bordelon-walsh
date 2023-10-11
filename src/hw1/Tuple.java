@@ -15,43 +15,55 @@ public class Tuple {
 	 * Creates a new tuple with the given description
 	 * @param t the schema for this tuple
 	 */
+	
+	//needed variables
+	private TupleDesc tup;
+	private int Pid;
+	private int ID;
+	private HashMap<String, Field> map = new HashMap<>();
+	
 	public Tuple(TupleDesc t) {
-		//your code here
+		this.tup = t;
 	}
 	
 	public TupleDesc getDesc() {
 		//your code here
-		return null;
+		return this.tup;
 	}
 	
 	/**
 	 * retrieves the page id where this tuple is stored
 	 * @return the page id of this tuple
 	 */
+	
 	public int getPid() {
 		//your code here
-		return 0;
+		return this.Pid;
 	}
 
 	public void setPid(int pid) {
 		//your code here
+		this.Pid = pid;
 	}
 
 	/**
 	 * retrieves the tuple (slot) id of this tuple
 	 * @return the slot where this tuple is stored
 	 */
+	
 	public int getId() {
 		//your code here
-		return 0;
+		return this.ID;
 	}
 
 	public void setId(int id) {
 		//your code here
+		this.ID = id;
 	}
 	
 	public void setDesc(TupleDesc td) {
 		//your code here;
+		this.tup = td;
 	}
 	
 	/**
@@ -59,13 +71,17 @@ public class Tuple {
 	 * @param i the field number to store the data
 	 * @param v the data
 	 */
+	
 	public void setField(int i, Field v) {
 		//your code here
+		
+		//use a hashmap and store the field number to the field
+		map.put(tup.getFieldName(i), v);
 	}
 	
 	public Field getField(int i) {
 		//your code here
-		return null;
+		return map.get(tup.getFieldName(i));
 	}
 	
 	/**
@@ -75,7 +91,10 @@ public class Tuple {
 	 */
 	public String toString() {
 		//your code here
-		return "";
+		String str = "";
+		for(HashMap.Entry<String, Field> entry : map.entrySet()) {
+			str += entry.getKey() + entry.getValue();
+		}
+		return str;
 	}
 }
-	

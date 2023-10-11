@@ -19,6 +19,9 @@ public class TupleDesc {
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
     	//your code here
+    	//make use of already present variables
+    	this.types = typeAr;
+    	this.fields = fieldAr;
     }
 
     /**
@@ -26,7 +29,8 @@ public class TupleDesc {
      */
     public int numFields() {
         //your code here
-    	return 0;
+    	//return the length of fields
+    	return fields.length;
     }
 
     /**
@@ -38,7 +42,8 @@ public class TupleDesc {
      */
     public String getFieldName(int i) throws NoSuchElementException {
         //your code here
-    	return null;
+    	//return the field at the index
+    	return fields[i];
     }
 
     /**
@@ -50,7 +55,14 @@ public class TupleDesc {
      */
     public int nameToId(String name) throws NoSuchElementException {
         //your code here
-    	return 0;
+    	//check each item for the name
+    	for(int i = 0; i < fields.length; i++) {
+    		if(fields[i] == name) {
+    			return i;
+    		}
+    	}
+    	//if it cannot be found, throw an exception
+    	throw new NoSuchElementException("Element does not exist");
     }
 
     /**
@@ -62,7 +74,7 @@ public class TupleDesc {
      */
     public Type getType(int i) throws NoSuchElementException {
         //your code here
-    	return null;
+    	return types[i];
     }
 
     /**
@@ -71,7 +83,17 @@ public class TupleDesc {
      */
     public int getSize() {
     	//your code here
-    	return 0;
+    	int sum = 0;
+    	//check to see which type we are dealing with and add the needed bytes
+    	for(int i = 0; i < types.length; i++) {
+    		if(getType(i) == Type.INT) {
+    			sum+=4;
+    		}
+    		if(getType(i) == Type.STRING) {
+    			sum+=129;
+    		}
+    	}
+    	return sum;
     }
 
     /**
@@ -84,6 +106,19 @@ public class TupleDesc {
      */
     public boolean equals(Object o) {
     	//your code here
+    	
+    	//if the sizes are equal and the length of their types are the same
+    	if(this.getSize() == ((TupleDesc) o).getSize() && this.types.length == ((TupleDesc) o).types.length) {
+    		//we should check to see that each type is the same
+    		for(int i = 0; i < types.length; i++) {
+    			if(this.types[i] != ((TupleDesc) o).types[i]) {
+    				//if there is an issue, return false
+    				return false;
+    			}
+    		}
+    		//no issues, return true
+    		return true;
+    	}
     	return false;
     }
     
@@ -91,7 +126,18 @@ public class TupleDesc {
     public int hashCode() {
         // If you want to use TupleDesc as keys for HashMap, implement this so
         // that equal objects have equals hashCode() results
-        throw new UnsupportedOperationException("unimplemented");
+    	
+    	//equality for this class was defined above as being the size and types
+    	//multiply the size by the hashcodes of the types
+    	//doesn't need to be used
+    	
+    	int hash = getSize();
+    	for(Type t : types) {
+    		hash *= t.hashCode();
+    	}
+    	return hash;
+    	
+        //throw new UnsupportedOperationException("unimplemented");
     }
 
     /**
@@ -102,6 +148,11 @@ public class TupleDesc {
      */
     public String toString() {
         //your code here
-    	return "";
+    	String description = "";
+    	for(int i = 0; i < types.length; i++) {
+    		description += types[i].toString() + " ";
+    		description += "(" + fields[i]+ "), ";
+    	}
+    	return description;
     }
 }

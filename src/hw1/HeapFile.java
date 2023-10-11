@@ -23,18 +23,24 @@ public class HeapFile {
 	 * @param f location of the heap file
 	 * @param types type of tuples contained in the file
 	 */
+	private File file;
+	private TupleDesc desc;
+	private int numPages;
+	
 	public HeapFile(File f, TupleDesc type) {
-		//your code here
+		this.file = f;
+		this.desc = type;
+		this.numPages = (int) file.length()/PAGE_SIZE;
 	}
 	
 	public File getFile() {
 		//your code here
-		return null;
+		return file;
 	}
 	
 	public TupleDesc getTupleDesc() {
 		//your code here
-		return null;
+		return desc;
 	}
 	
 	/**
@@ -46,6 +52,37 @@ public class HeapFile {
 	 */
 	public HeapPage readPage(int id) {
 		//your code here
+		try {
+			//create an array of bytes
+			byte[] bytes = new byte[PAGE_SIZE];
+			//open the file
+			RandomAccessFile F = new RandomAccessFile(file, "rw");
+			long val = id*PAGE_SIZE;
+			
+			//as long the the value falls within the bounds of the file
+			if(val >= 0 && val < file.length()) {
+				try {
+					//seek the correct position and fill the array
+					F.seek(val);
+					F.read(bytes);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			//finally, close the file
+			try {
+				F.close();
+				return new HeapPage(id, bytes, getId());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 	
@@ -56,7 +93,8 @@ public class HeapFile {
 	 */
 	public int getId() {
 		//your code here
-		return -1;
+		//get the hashcode
+		return file.getAbsoluteFile().hashCode();
 	}
 	
 	/**
@@ -66,6 +104,29 @@ public class HeapFile {
 	 */
 	public void writePage(HeapPage p) {
 		//your code here
+		try {
+			//open the file
+			RandomAccessFile F = new RandomAccessFile(file, "rw");
+			
+			//get the id of the page and find its exact location in the file
+			int ID = p.getId();
+			long val = ID * PAGE_SIZE;
+			
+			try {
+				//seek the position and write it
+				F.seek(val);
+				F.write(p.getPageData());
+				
+				//finally, close the file
+				F.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -77,6 +138,51 @@ public class HeapFile {
 	 */
 	public HeapPage addTuple(Tuple t) {
 		//your code here
+		
+		//make an empty page
+		HeapPage page;
+		
+		//try and find a page with an open slot
+		for(int i = 0; i < numPages; i++) {
+			page = readPage(i);
+			
+			//for each slot, check if it is occupied
+			for(int j = 0; j < page.getNumSlots(); j++) {
+				if(page.slotOccupied(j) == false) {
+					try {
+						//if there is an open space, add the tuple to it and return
+						page.addTuple(t);
+						t.setPid(page.getId());
+						writePage(page);
+						return page;
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		
+		//if that doesn't work, make an empty page and write it to disk
+		byte[] emptyBytes = new byte[PAGE_SIZE];
+		try {
+			page = new HeapPage(numPages, emptyBytes, getId());
+			try {
+				//add the tuple to the empty page and increment the number of pages
+				page.addTuple(t);
+				t.setPid(page.getId());
+				writePage(page);
+				numPages+=1;
+				return page;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//if none of that works, return null
 		return null;
 	}
 	
@@ -85,8 +191,21 @@ public class HeapFile {
 	 * from the proper HeapPage. It then writes the modified page to disk.
 	 * @param t the Tuple to be deleted
 	 */
+	
 	public void deleteTuple(Tuple t){
 		//your code here
+		
+		//initialize an empty page and find out if it has the tuple
+		HeapPage page;
+		for(int i = 0; i < numPages; i++) {
+			page = readPage(i);
+			//if so, delete the tuple
+			if(page.getId() == t.getPid()) {
+				page.deleteTuple(t);
+				writePage(page);
+				return;
+			}
+		}
 	}
 	
 	/**
@@ -96,7 +215,19 @@ public class HeapFile {
 	 */
 	public ArrayList<Tuple> getAllTuples() {
 		//your code here
-		return null;
+		
+		//create a new arraylist of tuples
+		ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+		HeapPage page;
+		//for each page, get the pages
+		for(int i = 0; i < numPages; i++) {
+			page = readPage(i);
+			Iterator<Tuple> TupleIterator = page.iterator();
+			while(TupleIterator.hasNext()) {
+				tuples.add(TupleIterator.next());
+			}
+		}
+		return tuples;
 	}
 	
 	/**
@@ -105,6 +236,8 @@ public class HeapFile {
 	 */
 	public int getNumPages() {
 		//your code here
-		return 0;
+		//use the same calculation as above
+		this.numPages = (int) file.length()/PAGE_SIZE;
+		return numPages;
 	}
 }
