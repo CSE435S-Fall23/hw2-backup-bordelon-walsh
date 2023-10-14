@@ -122,33 +122,132 @@ public class Relation {
 	 * @return
 	 */
 	public Relation join(Relation other, int field1, int field2) {
-		//your code here
-		
-		Type[] T = new Type[2];
-		String[] S = new String[2];
-		return null;
+	    // Get the TupleDesc of the current relation
+	    TupleDesc td1 = this.td;
+
+	    // Get the TupleDesc of the other relation
+	    TupleDesc td2 = other.td;
+
+	    // Create a new TupleDesc for the resulting relation by combining the fields from both relations
+	    Type[] T = new Type[td1.numFields() + td2.numFields()];
+	    String[] S = new String[td1.numFields() + td2.numFields()];
+
+	    // Copy the fields and types from the current relation's TupleDesc
+	    for (int i = 0; i < td1.numFields(); i++) {
+	        T[i] = td1.getType(i);
+	        S[i] = td1.getFieldName(i);
+	    }
+
+	    // Copy the fields and types from the other relation's TupleDesc
+	    for (int i = 0; i < td2.numFields(); i++) {
+	        T[td1.numFields() + i] = td2.getType(i);
+	        S[td1.numFields() + i] = td2.getFieldName(i);
+	    }
+
+	    // Create a new TupleDesc for the resulting relation
+	    TupleDesc resultTd = new TupleDesc(T, S);
+
+	    // Create a list to store the resulting tuples
+	    ArrayList<Tuple> resultTuples = new ArrayList<>();
+
+	    // Perform the join operation
+	    for (Tuple t1 : this.tuples) {
+	        for (Tuple t2 : other.tuples) {
+	            // Check if the values in the specified fields are equal
+	            if (t1.getField(field1).equals(t2.getField(field2))) {
+	                // Create a new tuple for the resulting relation by combining the fields from both tuples
+	                Tuple resultTuple = new Tuple(resultTd);
+
+	                // Copy the fields from the current tuple (t1)
+	                for (int i = 0; i < td1.numFields(); i++) {
+	                    resultTuple.setField(i, t1.getField(i));
+	                }
+
+	                // Copy the fields from the other tuple (t2)
+	                for (int i = 0; i < td2.numFields(); i++) {
+	                    resultTuple.setField(td1.numFields() + i, t2.getField(i));
+	                }
+
+	                // Add the resulting tuple to the list
+	                resultTuples.add(resultTuple);
+	            }
+	        }
+	    }
+
+	    // Create and return a new relation with the resulting tuples and TupleDesc
+	    return new Relation(resultTuples, resultTd);
 	}
+
 	
 	/**
-	 * Performs an aggregation operation on a relation. See the lab write up for details.
+	 * Performs an aggregation operation on a relation.
 	 * @param op the aggregation operation to be performed
 	 * @param groupBy whether or not a grouping should be performed
-	 * @return
+	 * @return a new Relation with the aggregation results
 	 */
 	public Relation aggregate(AggregateOperator op, boolean groupBy) {
-		//your code here
-		return null;
+	    // Get the TupleDesc of the current relation
+	    TupleDesc currentTd = this.td;
+
+	    // Create a new TupleDesc for the resulting relation
+	    TupleDesc resultTd;
+
+	    if (groupBy) {
+	        // For aggregates with GROUP BY, the resulting relation will have two columns:
+	        // - The first column will be the group column (same as the current relation)
+	        // - The second column will contain the result of aggregation
+
+	        resultTd = new TupleDesc(new Type[] { currentTd.getType(0), Type.INT }, new String[] { currentTd.getFieldName(0), "AggregateResult" });
+	    } else {
+	        // For aggregates without GROUP BY, the resulting relation will have a single column
+	        // containing the result of aggregation
+
+	        resultTd = new TupleDesc(new Type[] { Type.INT }, new String[] { "AggregateResult" });
+	    }
+
+	    // Create a list to store the resulting tuples
+	    ArrayList<Tuple> resultTuples = new ArrayList<>();
+
+	    // If there are no tuples, return an empty relation with the result TupleDesc
+	    if (this.tuples.isEmpty()) {
+	        return new Relation(resultTuples, resultTd);
+	    }
+
+	    // Use the Aggregator class to perform aggregation
+	    Aggregator aggregator;
+
+	    if (groupBy) {
+	        // Aggregates with GROUP BY
+	        aggregator = new Aggregator(op, groupBy, resultTd);
+	    } else {
+	        // Aggregates without GROUP BY
+	        aggregator = new Aggregator(op, groupBy, resultTd);
+	    }
+
+	    // Merge each tuple into the aggregator
+	    for (Tuple t : this.tuples) {
+	        aggregator.merge(t);
+	    }
+
+	    // Get the result from the aggregator
+	    resultTuples = aggregator.getResults();
+
+	    // Create and return a new relation with the resulting tuples and TupleDesc
+	    return new Relation(resultTuples, resultTd);
 	}
+
+
+
 	
 	public TupleDesc getDesc() {
-		//your code here
-		return this.td;
+	    return this.td;
 	}
+
 	
 	public ArrayList<Tuple> getTuples() {
-		//your code here
-		return this.tuples;
+	    return this.tuples;
 	}
+
 	
 	/**
 	 * Returns a string representation of this relation. The string representation should
