@@ -15,6 +15,9 @@ public class Relation {
 	
 	public Relation(ArrayList<Tuple> l, TupleDesc td) {
 		//your code here
+		//make use of what what we have
+		this.td = td;
+		this.tuples = l;
 	}
 	
 	/**
@@ -26,7 +29,16 @@ public class Relation {
 	 */
 	public Relation select(int field, RelationalOperator op, Field operand) {
 		//your code here
-		return null;
+		ArrayList<Tuple> selected = new ArrayList<Tuple>();
+		
+		//for each tuple if the comparison is true, add it to the selected tuples
+		for(Tuple t : tuples) {
+			if(t.getField(field).compare(op, operand)) {
+				selected.add(t);
+			}
+		}
+		
+		return new Relation(selected, td);
 	}
 	
 	/**
@@ -37,7 +49,35 @@ public class Relation {
 	 */
 	public Relation rename(ArrayList<Integer> fields, ArrayList<String> names) {
 		//your code here
-		return null;
+		
+		Type[] T = new Type[td.numFields()];
+		String[] S = new String[td.numFields()];
+		
+		//get a copy of the types and names from td
+		for(int i = 0; i < td.numFields(); i++) {
+			T[i] = td.getType(i);
+			S[i] = td.getFieldName(i);
+		}
+		
+		//rename needed fields
+		for(int i = 0; i < fields.size(); i++) {
+			S[fields.get(i)] = names.get(i);
+		}
+		
+		//new desc created
+		TupleDesc TupleDesc = new TupleDesc(T, S);
+		
+		ArrayList<Tuple> newTups = new ArrayList<Tuple>();
+		
+		//get a copy of each tuple and set its desc to the new one
+		for(Tuple t : tuples) {
+			Tuple remade = t;
+			remade.setDesc(TupleDesc);
+			newTups.add(remade);
+		}
+		
+		//finally return a new relation with the renamed tuples and desc
+		return new Relation(newTups, TupleDesc);
 	}
 	
 	/**
@@ -47,7 +87,29 @@ public class Relation {
 	 */
 	public Relation project(ArrayList<Integer> fields) {
 		//your code here
-		return null;
+		
+		//store needed types and names
+		Type[] T = new Type[fields.size()];
+		String[] S = new String[fields.size()];
+		
+		//get them from the current tuple desc
+		for(int i = 0; i < fields.size(); i++) {
+			T[0] = td.getType(fields.get(i));
+			S[0] = td.getFieldName(fields.get(i));
+		}
+		
+		TupleDesc newTD = new TupleDesc(T, S);
+		
+		ArrayList<Tuple> newTups = new ArrayList<Tuple>();
+		
+		//now get every tuple and give them the new TD
+		for(Tuple t : tuples) {
+			Tuple remade = t;
+			remade.setDesc(newTD);
+			newTups.add(remade);
+		}
+		
+		return new Relation(newTups, newTD);
 	}
 	
 	/**
@@ -61,6 +123,9 @@ public class Relation {
 	 */
 	public Relation join(Relation other, int field1, int field2) {
 		//your code here
+		
+		Type[] T = new Type[2];
+		String[] S = new String[2];
 		return null;
 	}
 	
@@ -77,12 +142,12 @@ public class Relation {
 	
 	public TupleDesc getDesc() {
 		//your code here
-		return null;
+		return this.td;
 	}
 	
 	public ArrayList<Tuple> getTuples() {
 		//your code here
-		return null;
+		return this.tuples;
 	}
 	
 	/**
