@@ -94,8 +94,8 @@ public class Relation {
 		
 		//get them from the current tuple desc
 		for(int i = 0; i < fields.size(); i++) {
-			T[0] = td.getType(fields.get(i));
-			S[0] = td.getFieldName(fields.get(i));
+			T[i] = td.getType(fields.get(i));
+			S[i] = td.getFieldName(fields.get(i));
 		}
 		
 		TupleDesc newTD = new TupleDesc(T, S);
