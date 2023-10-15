@@ -21,142 +21,128 @@ public class Aggregator {
      * @param t the tuple to be aggregated
      */
     public void merge(Tuple t) {
-    
-    	//get the value of the tuple
-    	IntField field = (IntField) t.getField(0);
-    	
-    	//if we are grouping go through these 5 cases
-    	if(groupBy) {
-    		
-    		if(operator == AggregateOperator.AVG) {
-        		
-        	}
-        	if(operator == AggregateOperator.COUNT) {
-        		
-        	}
-        	if(operator == AggregateOperator.MAX) {
-        		
-        	}
-        	if(operator == AggregateOperator.MIN) {
-        		
-        	}
-        	if(operator == AggregateOperator.SUM) {
-        		
-        	}
-    	}
-    	
-    	//otherwise do the non-grouped cases
-    	else {
-    		
-    		IntField curr;
-    		
-    		//keep track of an average array, pos 0 is count pos 1 is total value
-    		//adjust the value of result according to new average
-    		if(operator == AggregateOperator.AVG) {
-        		
-    			if(avg == null) {
-        			avg = new int[] {1, field.getValue()};
-        		}
-        		else {
-        			curr = (IntField) results.get(0).getField(0);
-        			avg[0] += 1;
-        			avg[1] += curr.getValue();
-        		}
-        		IntField average = new IntField(avg[1]/avg[0]);
-        		
-        		if(results.isEmpty()) {
-        			results.add(t);
-        		}
-        		results.get(0).setField(0, average);
-        	}
-    		
-    		//start with 1 and increment as new tuples are added
-        	if(operator == AggregateOperator.COUNT) {
-        		
-        		if(results.isEmpty()) {
-        			IntField init = new IntField(1);
-        			t.setField(0, init);
-        			results.add(t);
-        		}
-        		else {
-        			IntField curCount = (IntField) results.get(0).getField(0);
-        			IntField incremented = new IntField(curCount.getValue()+1);
-        			results.get(0).setField(0, incremented);
-        		}
-        	}
-        	
-        	//if the current value is lower than new value set the new value to current
-        	if(operator == AggregateOperator.MAX) {
-        		
-        		if(results.isEmpty()) {
-        			results.add(t);
-        			return;
-        		}
-        		else {
-        			curr = (IntField) results.get(0).getField(0);
-        		}
-        		if(curr.getValue() < field.getValue()) {
-        			results.get(0).setField(0, field);
-        		}
-        		return;
-        	}
-        	
-        	//if the current value is higher than new value set the new value to current
-        	if(operator == AggregateOperator.MIN) {
-        		
-        		if(results.isEmpty()) {
-        			results.add(t);
-        			return;
-        		}
-        		else {
-        			curr = (IntField) results.get(0).getField(0);
-        		}
-        		if(curr.getValue() > field.getValue()) {
-        			results.get(0).setField(0, field);
-        		}
-        		return;
-        	}
-        	
-        	//add the values together
-        	if(operator == AggregateOperator.SUM) {
-        		
-        		if(results.isEmpty()) {
-        			results.add(t);
-        			return;
-        		}
-        		else {
-        			curr = (IntField) results.get(0).getField(0);
-        		}
-        		
-        		int val = curr.getValue() + field.getValue();
-    			IntField newVal = new IntField(val);
-    			results.get(0).setField(0, newVal);
-    			return;
-        	}
-    	}
-    	
-    	/*
+        IntField field = (IntField) t.getField(0);
+
         if (groupBy) {
-            // If grouping is enabled, extract the group field from the tuple
             Field groupField = t.getField(0);
-            
-            // Find if the groupField already exists in the results
             Tuple existingTuple = findTupleWithGroupField(groupField);
 
             if (existingTuple != null) {
-                // If a tuple with the groupField exists, update its aggregation result
-            	
-                
+                IntField resultField = (IntField) existingTuple.getField(1); // Assuming the result field is at index 1
+
+                // Perform aggregation based on the operator
+                switch (operator) {
+                    case AVG:
+                        int newCount = ((IntField) existingTuple.getField(2)).getValue() + 1; // Assuming count is at index 2
+                        int newTotal = resultField.getValue() + field.getValue();
+                        existingTuple.setField(2, new IntField(newCount)); // Update count
+                        existingTuple.setField(1, new IntField(newTotal));  // Update total value
+                        break;
+
+                    case COUNT:
+                        int newCountValue = ((IntField) existingTuple.getField(2)).getValue() + 1; // Assuming count is at index 2
+                        existingTuple.setField(2, new IntField(newCountValue));
+                        break;
+
+                    case MAX:
+                        int currentMaxValue = resultField.getValue();
+                        if (field.getValue() > currentMaxValue) {
+                            existingTuple.setField(1, new IntField(field.getValue())); // Assuming the result field is at index 1
+                        }
+                        break;
+
+                    case MIN:
+                        int currentMinValue = resultField.getValue();
+                        if (field.getValue() < currentMinValue) {
+                            existingTuple.setField(1, new IntField(field.getValue())); // Assuming the result field is at index 1
+                        }
+                        break;
+
+                    case SUM:
+                        int currentSumValue = resultField.getValue() + field.getValue();
+                        existingTuple.setField(1, new IntField(currentSumValue)); // Assuming the result field is at index 1
+                        break;
+                }
             } else {
-                // If the groupField is not in the results, create a new tuple
-            	Tuple newTuple = new Tuple(t.getDesc());
-                
+                // If the groupField is not in the results, create a new tuple and add it to results
+                Tuple newTuple = new Tuple(td);
+                newTuple.setField(0, groupField);
+                switch (operator) {
+                    case AVG:
+                        // Initialize count and total value for AVG
+                        newTuple.setField(2, new IntField(1)); // Assuming count is at index 2
+                        newTuple.setField(1, field); // Assuming the result field is at index 1
+                        break;
+                    case COUNT:
+                        // Initialize count for COUNT
+                        newTuple.setField(2, new IntField(1)); // Assuming count is at index 2
+                        break;
+                    case MAX:
+                        // Initialize MAX
+                        newTuple.setField(1, field); // Assuming the result field is at index 1
+                        break;
+                    case MIN:
+                        // Initialize MIN
+                        newTuple.setField(1, field); // Assuming the result field is at index 1
+                        break;
+                    case SUM:
+                        // Initialize SUM
+                        newTuple.setField(1, field); // Assuming the result field is at index 1
+                        break;
+                }
+                results.add(newTuple);
             }
         } else {
-            
+            // Handle non-grouped aggregation
+            if (results.isEmpty()) {
+                results.add(t);
+            } else {
+                IntField currentResult = (IntField) results.get(0).getField(0);
+                int currentValue = currentResult.getValue();
+                int newValue;
+
+                switch (operator) {
+                    case AVG:
+                        // Calculate average
+                        int currentCount = ((IntField) results.get(0).getField(1)).getValue(); // Assuming count is at index 1
+                        int newCount = currentCount + 1;
+                        results.get(0).setField(1, new IntField(newCount)); // Update count
+                        newValue = (currentValue * currentCount + field.getValue()) / newCount;
+                        break;
+                    case COUNT:
+                        // Count the number of tuples
+                        newValue = currentValue + 1;
+                        break;
+                    case MAX:
+                        // Calculate maximum
+                        if (field.getValue() > currentValue) {
+                            newValue = field.getValue();
+                        } else {
+                            newValue = currentValue;
+                        }
+                        break;
+                    case MIN:
+                        // Calculate minimum
+                        if (field.getValue() < currentValue) {
+                            newValue = field.getValue();
+                        } else {
+                            newValue = currentValue;
+                        }
+                        break;
+                    case SUM:
+                        // Calculate sum
+                        newValue = currentValue + field.getValue();
+                        break;
+                    default:
+                        newValue = currentValue;
+                        break;
+                }
+
+                results.get(0).setField(0, new IntField(newValue));
+            }
         }
-        */
     }
+
 
 
 
