@@ -63,6 +63,7 @@ public class Aggregator {
                         existingTuple.setField(1, new IntField(currentSumValue)); // Assuming the result field is at index 1
                         break;
                 }
+                
             } else {
                 // If the groupField is not in the results, create a new tuple and add it to results
                 Tuple newTuple = new Tuple(td);
@@ -92,6 +93,7 @@ public class Aggregator {
                 }
                 results.add(newTuple);
             }
+            
         } else {
             // Handle non-grouped aggregation
             if (results.isEmpty()) {

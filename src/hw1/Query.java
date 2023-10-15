@@ -38,7 +38,44 @@ public class Query {
 		
 		
 		//your code here
-		return null;
+		
+		//a catalog to get the tables as needed
+		Catalog c = Database.getCatalog();
+		
+		//which columns does this query want?
+		List<SelectItem> selected = sb.getSelectItems();
+		
+		//first part to building a tuple desc
+		String[] names = new String[selected.size()];
+		for(int i = 0; i < selected.size(); i++) {
+			names[i] = selected.get(i).toString();
+		}
+		
+		//get the id and desc of the table
+		int ID = c.getTableId(sb.getFromItem().toString());
+		TupleDesc td = c.getTupleDesc(ID);
+		
+		//get types
+		Type[] types = new Type[names.length];
+		int index = 0;
+		for(int i = 0; i < td.numFields(); i++) {
+			if(names[index].equals(td.getFieldName(i))) {
+				types[index] = td.getType(i);
+				index++;
+			}
+		}
+		
+		//now make a proper TupleDesc with the columns that are needed
+		td = new TupleDesc(types, names);
+		
+		//get the list of tuples
+		ArrayList<Tuple> tuples = c.getDbFile(ID).getAllTuples();
+		
+		//build the relation, may need some adjustment
+		Relation r = new Relation(tuples, td);
+		
+		
+		return r;
 		
 	}
 }
