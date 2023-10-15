@@ -186,8 +186,6 @@ public class Relation {
 	 * @return a new Relation with the aggregation results
 	 */
 	public Relation aggregate(AggregateOperator op, boolean groupBy) {
-	    // Get the TupleDesc of the current relation
-	    TupleDesc currentTd = this.td;
 
 	    // Create a new TupleDesc for the resulting relation
 	    TupleDesc resultTd;
@@ -197,7 +195,7 @@ public class Relation {
 	        // - The first column will be the group column (same as the current relation)
 	        // - The second column will contain the result of aggregation
 
-	        resultTd = new TupleDesc(new Type[] { currentTd.getType(0), Type.INT }, new String[] { currentTd.getFieldName(0), "AggregateResult" });
+	        resultTd = new TupleDesc(new Type[] { td.getType(0), Type.INT }, new String[] { td.getFieldName(0), "AggregateResult" });
 	    } else {
 	        // For aggregates without GROUP BY, the resulting relation will have a single column
 	        // containing the result of aggregation
@@ -206,7 +204,7 @@ public class Relation {
 	    }
 
 	    // Create a list to store the resulting tuples
-	    ArrayList<Tuple> resultTuples = new ArrayList<>();
+	    ArrayList<Tuple> resultTuples = new ArrayList<Tuple>();
 
 	    // If there are no tuples, return an empty relation with the result TupleDesc
 	    if (this.tuples.isEmpty()) {
@@ -214,8 +212,9 @@ public class Relation {
 	    }
 
 	    // Use the Aggregator class to perform aggregation
-	    Aggregator aggregator;
+	    Aggregator aggregator = new Aggregator(op, groupBy, resultTd);
 
+	    /*
 	    if (groupBy) {
 	        // Aggregates with GROUP BY
 	        aggregator = new Aggregator(op, groupBy, resultTd);
@@ -223,6 +222,7 @@ public class Relation {
 	        // Aggregates without GROUP BY
 	        aggregator = new Aggregator(op, groupBy, resultTd);
 	    }
+	    */
 
 	    // Merge each tuple into the aggregator
 	    for (Tuple t : this.tuples) {
