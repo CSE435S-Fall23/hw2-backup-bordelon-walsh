@@ -253,8 +253,22 @@ public class Relation {
 	 * Returns a string representation of this relation. The string representation should
 	 * first contain the TupleDesc, followed by each of the tuples in this relation
 	 */
+	/**
+	 * Returns a string representation of this relation. The string representation should
+	 * first contain the TupleDesc, followed by each of the tuples in this relation.
+	 */
 	public String toString() {
-		//your code here
-		return null;
+	    StringBuilder sb = new StringBuilder();
+
+	    // Append the TupleDesc to the string
+	    sb.append("TupleDesc: ").append(td).append("\n");
+
+	    // Append each tuple to the string
+	    for (Tuple tuple : tuples) {
+	        sb.append(tuple).append("\n");
+	    }
+
+	    return sb.toString();
 	}
+
 }
