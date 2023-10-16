@@ -156,8 +156,14 @@ public class Query {
         else {
         	List<SelectItem> items = sb.getSelectItems();
         	for(SelectItem item : items) {
+        		
         		ColumnVisitor cv = new ColumnVisitor();
-        		cv.visit((SelectExpressionItem) item);
+        		if(item instanceof AllColumns) {
+        			item.accept(cv);
+        		}
+        		else {
+        			cv.visit((SelectExpressionItem) item);
+        		}
         		
         		if(cv.getOp() != null) {
         			Aggregator a = new Aggregator(cv.getOp(), false, r.getDesc());
