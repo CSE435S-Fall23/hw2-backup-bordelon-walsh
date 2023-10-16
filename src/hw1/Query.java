@@ -146,9 +146,30 @@ public class Query {
         
         //GROUP AGGREGATE CASE
         List<Expression> groups = sb.getGroupByColumnReferences();
+        
+        //if there is at least one grouping entry
         if(groups != null) {
-        	for(int i = 0; i < groups.size(); i++) {
+        	
+        	//get each select item and visit it
+        	for(SelectItem item : selected) {
+        		ColumnVisitor cv = new ColumnVisitor();
+        		if(item instanceof AllColumns) {
+        			item.accept(cv);
+        		}
+        		else {
+        			cv.visit((SelectExpressionItem) item);
+        		}
         		
+        		//if there is an operator to use, run aggregator and make a new relation
+        		if(cv.getOp() != null) {
+        			Aggregator a = new Aggregator(cv.getOp(), true, r.getDesc());
+            		
+            		for(Tuple t : r.getTuples()) {
+            			a.merge(t);
+            		}
+            		
+            		r = new Relation(a.getResults(), td);
+        		}
         	}
         }
         
