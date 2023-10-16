@@ -49,7 +49,15 @@ public class Query {
                     names[i] = tableDesc.getFieldName(j);
                 }
             } else {
-                names[i] = selected.get(i).toString();
+            	SelectExpressionItem item = (SelectExpressionItem) selected.get(i);
+            	if(item.getAlias() != null) {
+            		names[i] = item.getAlias().getName();
+            	}
+            	else {
+            		ColumnVisitor cv = new ColumnVisitor();
+            		cv.visit(item);
+            		names[i] = cv.getColumn();
+            	}
             }
         }
 
