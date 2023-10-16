@@ -51,7 +51,7 @@ public class QueryTest {
 	public void testSelect() {
 		Query q = new Query("SELECT a1, a2 FROM A WHERE a1 = 530");
 		Relation r = q.execute();
-		
+		System.out.println("Tuples size should be 5 but is instead " + r.getTuples().size());
 		assert(r.getTuples().size() == 5);
 		assert(r.getDesc().getSize() == 8);
 	}
@@ -79,7 +79,7 @@ public class QueryTest {
 	public void testAggregate() {
 		Query q = new Query("SELECT SUM(a2) FROM A");
 		Relation r = q.execute();
-		
+		System.out.println("Should have size of 1 but is " + r.getTuples().size());
 		assertTrue(r.getTuples().size() == 1);
 		IntField agg = (IntField) (r.getTuples().get(0).getField(0));
 		assertTrue(agg.getValue() == 36);

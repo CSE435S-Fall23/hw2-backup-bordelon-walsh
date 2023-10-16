@@ -57,7 +57,7 @@ public class TupleDesc {
         //your code here
     	//check each item for the name
     	for(int i = 0; i < fields.length; i++) {
-    		if(fields[i] == name) {
+    		if(fields[i].equals(name)) {
     			return i;
     		}
     	}
