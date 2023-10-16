@@ -83,11 +83,58 @@ public class Query {
             td = c.getTupleDesc(tableId);
         }
         //TODO still need to do where and join
+                
+   
 
         // Get the list of tuples
         ArrayList<Tuple> tuples = c.getDbFile(tableID).getAllTuples();
+        
+        for(int i = 0; i < tuples.size(); i++) {
+        	tuples.get(i).setDesc(td);
+        }
+        
+        Relation r = new Relation(tuples, td);
+        
+        //for each join make a relation
+        List<Join> joins = sb.getJoins();
+        if(joins != null) {
+        	for(int i = 0; i < joins.size(); i++) {
+            	
+        		//get info of joining table
+            	int otherID = c.getTableId(joins.get(i).getRightItem().toString());
+            	TupleDesc otherDesc = c.getTupleDesc(otherID);
+            	
+            	ArrayList<Tuple> otherTuples = c.getDbFile(otherID).getAllTuples();
+            	Relation other = new Relation(otherTuples, otherDesc);
+            	
+            	//find the info of the join expression
+            	WhereExpressionVisitor wev = new WhereExpressionVisitor();
+            	joins.get(i).getOnExpression().accept(wev);
+            	
+            	//get the left field number
+            	int left = 0;
+            	for(int j = 0; j < td.numFields(); j++) {
+            		if(wev.getLeft().equals(td.getFieldName(j))) {
+            			left = j;
+            		}
+            	}
+            	
+            	//get right field number
+            	int right = 0;
+            	for(int j = 0; j < otherDesc.numFields(); j++) {
+            		String s = wev.getRight().toString();
+            		s = s.substring(s.indexOf(".")+1);
+            		if(s.equals(otherDesc.getFieldName(j))) {
+            			right = j;
+            		}
+            	}
+            	
+            	//run join
+            	r = r.join(other, left, right);
+            }
+        }
 
-        return new Relation(tuples, td);
+        return r;
 
 
     }
