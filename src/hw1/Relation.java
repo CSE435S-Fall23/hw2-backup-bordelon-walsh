@@ -214,15 +214,6 @@ public class Relation {
 	    // Use the Aggregator class to perform aggregation
 	    Aggregator aggregator = new Aggregator(op, groupBy, resultTd);
 
-	    /*
-	    if (groupBy) {
-	        // Aggregates with GROUP BY
-	        aggregator = new Aggregator(op, groupBy, resultTd);
-	    } else {
-	        // Aggregates without GROUP BY
-	        aggregator = new Aggregator(op, groupBy, resultTd);
-	    }
-	    */
 
 	    // Merge each tuple into the aggregator
 	    for (Tuple t : this.tuples) {
