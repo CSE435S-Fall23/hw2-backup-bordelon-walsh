@@ -48,16 +48,8 @@ public class Query {
                 for (int j = 0; j < tableDesc.numFields(); j++) {
                     names[i] = tableDesc.getFieldName(j);
                 }
-            } else if (selected.get(i) instanceof SelectExpressionItem) {
-                SelectExpressionItem item = (SelectExpressionItem) selected.get(i);
-                if (item.getAlias() != null) {
-                    names[i] = item.getAlias().getName();
-                } else {
-                    if (item.getExpression() instanceof Column) {
-                        Column column = (Column) item.getExpression();
-                        names[i] = column.getColumnName();
-                    }
-                }
+            } else {
+                names[i] = selected.get(i).toString();
             }
         }
 
@@ -138,8 +130,37 @@ public class Query {
             }
         }
         // TODO rework the groupBy and Aggregate for Query
-
-
+        
+        for(int i = 0; i < r.getTuples().size(); i++) {
+        	r.getTuples().get(i).setDesc(td);
+        }
+        
+        
+        //GROUP AGGREGATE CASE
+        List<Expression> groups = sb.getGroupByColumnReferences();
+        if(groups != null) {
+        	for(int i = 0; i < groups.size(); i++) {
+        		
+        	}
+        }
+        
+        //NO GROUP AGGREGATE CASE
+        else {
+        	List<SelectItem> items = sb.getSelectItems();
+        	for(SelectItem item : items) {
+        		ColumnVisitor cv = new ColumnVisitor();
+        		cv.visit((SelectExpressionItem) item);
+        		
+        		if(cv.getOp() != null) {
+        			Aggregator a = new Aggregator(cv.getOp(), false, r.getDesc());
+            		
+            		for(Tuple t : r.getTuples()) {
+            			a.merge(t);
+            		}
+        		}
+        	}
+        }
+        
         return r;
     }
     

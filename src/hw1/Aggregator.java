@@ -13,7 +13,7 @@ public class Aggregator {
         this.operator = operator;
         this.groupBy = groupBy;
         this.td = td;
-        this.results = new ArrayList<>();
+        this.results = new ArrayList<Tuple>();
     }
 
     /**
