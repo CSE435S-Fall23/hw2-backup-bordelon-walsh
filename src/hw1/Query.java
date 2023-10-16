@@ -154,9 +154,10 @@ public class Query {
         
         //NO GROUP AGGREGATE CASE
         else {
-        	List<SelectItem> items = sb.getSelectItems();
-        	for(SelectItem item : items) {
+        	//for each item in selected
+        	for(SelectItem item : selected) {
         		
+        		//visit the columns and find the operator
         		ColumnVisitor cv = new ColumnVisitor();
         		if(item instanceof AllColumns) {
         			item.accept(cv);
@@ -165,12 +166,15 @@ public class Query {
         			cv.visit((SelectExpressionItem) item);
         		}
         		
+        		//if there is an operator to use, run aggregator and make a new relation
         		if(cv.getOp() != null) {
         			Aggregator a = new Aggregator(cv.getOp(), false, r.getDesc());
             		
             		for(Tuple t : r.getTuples()) {
             			a.merge(t);
             		}
+            		
+            		r = new Relation(a.getResults(), td);
         		}
         	}
         }
