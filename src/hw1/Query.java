@@ -50,14 +50,9 @@ public class Query {
                 }
             } else {
             	SelectExpressionItem item = (SelectExpressionItem) selected.get(i);
-            	if(item.getAlias() != null) {
-            		names[i] = item.getAlias().getName();
-            	}
-            	else {
-            		ColumnVisitor cv = new ColumnVisitor();
-            		cv.visit(item);
-            		names[i] = cv.getColumn();
-            	}
+            	ColumnVisitor cv = new ColumnVisitor();
+            	cv.visit(item);
+            	names[i] = cv.getColumn();
             }
         }
 
@@ -69,7 +64,7 @@ public class Query {
         Type[] types = new Type[names.length];
         int index = 0;
         for (int i = 0; i < td.numFields(); i++) {
-            if (names[index] != null && names[index].equals(td.getFieldName(i))) {
+            if (index < names.length && names[index].equals(td.getFieldName(i))) {
                 types[index] = td.getType(i);
                 index++;
             }
@@ -198,6 +193,27 @@ public class Query {
             		r = new Relation(a.getResults(), td);
         		}
         	}
+        }
+        
+        //AS statement
+        ArrayList<Integer> colNums = new ArrayList<Integer>();
+        ArrayList<String> newNames = new ArrayList<String>();
+        for(int i = 0; i < selected.size(); i++) {
+        	if(selected.get(i) instanceof AllColumns) {
+        		
+        	}
+        	else {
+        		SelectExpressionItem item = (SelectExpressionItem) selected.get(i);
+            	if(item.getAlias() != null) {
+            		colNums.add(i);
+            		newNames.add(item.getAlias().getName());
+            	}
+        	}
+        }
+        
+        //rename columns
+        if(!colNums.isEmpty()) {
+        	r = r.rename(colNums, newNames);
         }
         
         return r;
