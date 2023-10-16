@@ -82,7 +82,8 @@ public class Query {
             int tableId = c.getTableId(sb.getFromItem().toString());
             td = c.getTupleDesc(tableId);
         }
-        //TODO still need to do where and join
+        
+        //TODO still need to do Grouping and Aggregation
                 
    
 
@@ -132,6 +133,15 @@ public class Query {
             	//run join
             	r = r.join(other, left, right);
             }
+        }
+        
+        //Now time for Grouping
+        List<Expression> columns = sb.getGroupByColumnReferences();
+        if(columns != null) {
+        	for(int i = 0; i < columns.size(); i++) {
+        		ColumnVisitor cv = new ColumnVisitor();
+        		//columns.get(i).accept(null);
+        	}
         }
 
         return r;
