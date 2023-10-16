@@ -137,65 +137,16 @@ public class Query {
                 r = r.join(other, left, right);
             }
         }
+        // TODO rework the groupBy and Aggregate for Query
 
-     // Check if there are columns to group by
-        List<Expression> columns = sb.getGroupByColumnReferences();
-        if (columns != null) {
-            r = group(r, columns);
-        }
 
         return r;
     }
     
- // Helper method for aggregation
-    private Relation aggregate(Relation relation) {
-        // Handle non-grouped aggregation (SUM of a2)
-        Aggregator aggregator = new Aggregator(AggregateOperator.SUM, false, relation.getDesc());
+    
 
-        for (Tuple tuple : relation.getTuples()) {
-            // Merge each tuple into the aggregator
-            aggregator.merge(tuple);
-        }
 
-        // Get the aggregated results from the aggregator
-        ArrayList<Tuple> aggregatedTuples = aggregator.getResults();
 
-        // The aggregation result will be in aggregatedTuples
-        return new Relation(aggregatedTuples, relation.getDesc());
-    }
-
- // Helper method for grouping
-    private Relation group(Relation relation, List<Expression> groupColumns) {
-        // Group by specified columns and perform SUM aggregation
-        Aggregator aggregator = new Aggregator(AggregateOperator.SUM, true, relation.getDesc());
-
-        for (Tuple tuple : relation.getTuples()) {
-            // Merge each tuple into the aggregator
-            aggregator.merge(tuple);
-        }
-
-        // Get the aggregated results from the aggregator
-        ArrayList<Tuple> aggregatedTuples = aggregator.getResults();
-
-        // Create a new TupleDesc for the aggregated relation
-        String[] names = new String[groupColumns.size() + 1]; // One for the group, and one for the aggregation result
-        Type[] types = new Type[groupColumns.size() + 1]; // One for the group, and one for the aggregation result
-
-        // Populate names and types based on group columns and the aggregation result
-        for (int i = 0; i < groupColumns.size(); i++) {
-            names[i] = groupColumns.get(i).toString();
-            types[i] = relation.getDesc().getType(i);
-        }
-        names[groupColumns.size()] = "SUM(a2)"; // Adjust the name for the SUM result
-        types[groupColumns.size()] = Type.INT; // Assuming INT type for the aggregation result
-
-        TupleDesc newDesc = new TupleDesc(types, names);
-
-        // Create a new Relation with the aggregated data
-        Relation aggregatedRelation = new Relation(aggregatedTuples, newDesc);
-
-        return aggregatedRelation;
-    }
     
  // Helper method to apply WHERE condition filtering
     private ArrayList<Tuple> applyWhereFilter(ArrayList<Tuple> tuples, Expression where, TupleDesc td) {
