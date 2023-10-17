@@ -1,3 +1,7 @@
+/*
+ * Authors: Robert Walsh, Jayce Bordelon
+ */
+
 package test;
 
 import static org.junit.Assert.*;
@@ -55,7 +59,8 @@ public class YourUnitTests {
 		ahf = c.getDbFile(tableId);
 	}
 
-@Test
+	//test functionality of other aggregates
+	@Test
 	public void AggregateTest() {
 		Relation ar = new Relation(ahf.getAllTuples(), atd);
 		ar = ar.aggregate(AggregateOperator.MIN, false);
@@ -64,12 +69,47 @@ public class YourUnitTests {
 		IntField agg = (IntField)(ar.getTuples().get(0).getField(0));
 		assertTrue(agg.getValue() == 1);
 		
+		ar = new Relation(ahf.getAllTuples(), atd);
 		ar = ar.aggregate(AggregateOperator.MAX, false);
 		assertTrue(ar.getTuples().size() == 1);
 		agg = (IntField) (ar.getTuples().get(0).getField(0));
-		assertTrue(agg.getValue() == 1);
+		assertTrue(agg.getValue() == 530);
+		
+		ar = new Relation(ahf.getAllTuples(), atd);
+		ar = ar.aggregate(AggregateOperator.AVG, false);
+		assertTrue(ar.getTuples().size() == 1);
+		agg = (IntField) (ar.getTuples().get(0).getField(0));
+		assertTrue(agg.getValue() == 332);
+		
+		ar = new Relation(ahf.getAllTuples(), atd);
+		ar = ar.aggregate(AggregateOperator.COUNT, false);
+		assertTrue(ar.getTuples().size() == 1);
+		agg = (IntField) (ar.getTuples().get(0).getField(0));
+		assertTrue(agg.getValue() == 8);
 	}
 
+	//test basic functionality of group features
+	@Test
+	public void GroupAggregateTest() {
+		Relation ar = new Relation(ahf.getAllTuples(), atd);
+		ar = ar.aggregate(AggregateOperator.MIN, true);
+	
+		assertTrue(ar.getTuples().size() == 4);
+	
+		ar = new Relation(ahf.getAllTuples(), atd);
+		ar = ar.aggregate(AggregateOperator.MAX, true);
+		assertTrue(ar.getTuples().size() == 4);
+	
+		ar = new Relation(ahf.getAllTuples(), atd);
+		ar = ar.aggregate(AggregateOperator.AVG, true);
+		assertTrue(ar.getTuples().size() == 4);
+	
+		ar = new Relation(ahf.getAllTuples(), atd);
+		ar = ar.aggregate(AggregateOperator.COUNT, true);
+		assertTrue(ar.getTuples().size() == 4);
+	}
+
+	//test "AS" statement functionality
 	@Test
 	public void AsTest() {
 		Query q = new Query("SELECT a1 AS column FROM A");

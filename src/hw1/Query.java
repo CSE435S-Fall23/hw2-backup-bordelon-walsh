@@ -1,3 +1,7 @@
+/*
+ * Authors: Robert Walsh, Jayce Bordelon
+ */
+
 package hw1;
 
 import java.util.ArrayList;
